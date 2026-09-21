@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="hi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#111111">
+<title>Black King Transport</title>
+<style>
+:root{--bg:#f4f5f7;--card:#fff;--ink:#111;--muted:#6b7280;--line:#e5e7eb;--accent:#111}
+*{box-sizing:border-box}body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:var(--ink)}
+header{background:#111;color:#fff;padding:18px 16px;position:sticky;top:0;z-index:5}header h1{margin:0;font-size:21px}header small{opacity:.75}
+nav{display:flex;gap:7px;overflow:auto;padding:10px;background:#fff;border-bottom:1px solid var(--line);position:sticky;top:69px;z-index:4}
+nav button{border:1px solid var(--line);background:#fff;border-radius:10px;padding:9px 12px;white-space:nowrap}nav button.active{background:#111;color:#fff}
+main{max-width:900px;margin:auto;padding:14px}.view{display:none}.view.active{display:block}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:12px;box-shadow:0 2px 8px #00000008}
+.stat b{font-size:25px;display:block}.stat span{color:var(--muted);font-size:12px}
+label{display:block;font-size:13px;font-weight:600;margin:10px 0 5px}input,select,textarea{width:100%;padding:11px;border:1px solid #d1d5db;border-radius:10px;background:#fff;font-size:15px}textarea{min-height:80px}
+button.primary{background:#111;color:#fff;border:0;border-radius:10px;padding:12px 16px;font-weight:700}button.danger{background:#fee2e2;color:#991b1b;border:0;border-radius:9px;padding:7px 10px}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.muted{color:var(--muted)}.row{display:flex;justify-content:space-between;gap:10px;align-items:center}
+table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:9px;border-bottom:1px solid var(--line);text-align:left}th{background:#fafafa}
+@media(max-width:650px){.grid3{grid-template-columns:1fr 1fr}.grid{grid-template-columns:1fr 1fr}table{display:block;overflow:auto;white-space:nowrap}}
+</style>
+</head>
+<body>
+<header><h1>🚛 Black King Transport</h1><small>Daily Vehicle • Diesel • Trip • Route • KM Entry</small></header>
+<nav id="nav">
+<button class="active" data-v="dash">Dashboard</button><button data-v="vehicle">Vehicle</button><button data-v="diesel">Diesel</button><button data-v="trip">Trip / Route</button><button data-v="km">Kilometer</button><button data-v="reports">Reports</button>
+</nav>
+<main>
+<section id="dash" class="view active">
+<div class="card"><div class="row"><div><b>आज का हिसाब</b><div class="muted" id="today"></div></div><button class="primary" onclick="show('diesel')">+ Diesel</button></div></div>
+<div class="grid3">
+<div class="card stat"><b id="sTrips">0</b><span>आज की Trips</span></div><div class="card stat"><b id="sDiesel">0 L</b><span>आज Diesel</span></div><div class="card stat"><b id="sAmount">₹0</b><span>Diesel खर्च</span></div>
+<div class="card stat"><b id="sKm">0</b><span>आज KM</span></div><div class="card stat"><b id="sVehicles">12</b><span>कुल गाड़ियाँ</span></div><div class="card stat"><b id="sEntries">0</b><span>कुल Entries</span></div>
+</div>
+<div class="card"><b>जल्दी Entry करें</b><div class="actions"><button class="primary" onclick="show('vehicle')">🚛 Vehicle</button><button class="primary" onclick="show('diesel')">⛽ Diesel</button><button class="primary" onclick="show('trip')">🛣️ Trip</button><button class="primary" onclick="show('km')">🧭 KM</button></div></div>
+</section>
+
+<section id="vehicle" class="view">
+<div class="card"><h3>🚛 Vehicle / Driver Entry</h3><div class="grid"><div><label>गाड़ी नंबर</label><select id="v_vehicle"></select></div><div><label>Driver Name</label><input id="v_driver" placeholder="ड्राइवर का नाम"></div></div><div class="grid"><div><label>Mobile Number</label><input id="v_mobile" inputmode="tel"></div><div><label>Date</label><input id="v_date" type="date"></div></div><div class="actions"><button class="primary" onclick="saveVehicle()">Save Entry</button></div></div>
+<div class="card"><b>Saved Driver Names</b><div id="drivers"></div></div>
+</section>
+
+<section id="diesel" class="view">
+<div class="card"><h3>⛽ Diesel Entry</h3><div class="grid"><div><label>गाड़ी नंबर</label><select id="d_vehicle"></select></div><div><label>Driver</label><input id="d_driver" readonly></div></div><div class="grid"><div><label>Date</label><input id="d_date" type="date"></div><div><label>Diesel Liter</label><input id="d_liter" type="number" step="0.01" oninput="calcDiesel()"></div></div><div class="grid"><div><label>Rate / Liter (₹)</label><input id="d_rate" type="number" step="0.01" oninput="calcDiesel()"></div><div><label>Total Amount (₹)</label><input id="d_amount" type="number" readonly></div></div><label>Diesel Pump / Location</label><input id="d_pump" placeholder="पंप / लोकेशन"><div class="actions"><button class="primary" onclick="saveDiesel()">Save Diesel Entry</button></div></div>
+</section>
+
+<section id="trip" class="view">
+<div class="card"><h3>🛣️ Trip / Route Entry</h3><div class="grid"><div><label>गाड़ी नंबर</label><select id="t_vehicle"></select></div><div><label>Driver</label><input id="t_driver" readonly></div></div><div class="grid"><div><label>Trip No.</label><input id="t_no" placeholder="TRIP-001"></div><div><label>Date</label><input id="t_date" type="date"></div></div><div class="grid"><div><label>कहाँ से</label><input id="t_from"></div><div><label>कहाँ तक</label><input id="t_to"></div></div><div class="grid"><div><label>Loading Location</label><input id="t_load"></div><div><label>Unloading Location</label><input id="t_unload"></div></div><label>Party / Load Details</label><textarea id="t_party" placeholder="पार्टी, माल, वजन आदि"></textarea><div class="actions"><button class="primary" onclick="saveTrip()">Save Trip</button></div></div>
+</section>
+
+<section id="km" class="view">
+<div class="card"><h3>🧭 Kilometer Entry</h3><div class="grid"><div><label>गाड़ी नंबर</label><select id="k_vehicle"></select></div><div><label>Driver</label><input id="k_driver" readonly></div></div><div class="grid"><div><label>Date</label><input id="k_date" type="date"></div><div><label>Opening KM</label><input id="k_open" type="number" oninput="calcKm()"></div></div><div class="grid"><div><label>Closing KM</label><input id="k_close" type="number" oninput="calcKm()"></div><div><label>Total KM</label><input id="k_total" type="number" readonly></div></div><div class="actions"><button class="primary" onclick="saveKm()">Save KM Entry</button></div></div>
+</section>
+
+<section id="reports" class="view">
+<div class="card"><h3>📊 Reports</h3><div class="grid"><div><label>From</label><input id="r_from" type="date"></div><div><label>To</label><input id="r_to" type="date"></div></div><div class="actions"><button class="primary" onclick="renderReport()">Show Report</button><button onclick="exportCSV()">Export CSV</button><button onclick="window.print()">Print / PDF</button><button class="danger" onclick="clearAll()">Clear All Data</button></div></div>
+<div class="card" id="reportOut"></div>
+</section>
+</main>
+<script>
+const KEY='blackKingTransport_v1';
+let db=JSON.parse(localStorage.getItem(KEY)||'{"vehicles":[],"drivers":{},"diesel":[],"trips":[],"km":[]}');
+if(!db.vehicles.length){db.vehicles=Array.from({length:12},(_,i)=>'Vehicle '+String(i+1).padStart(2,'0'));save()}
+const $=id=>document.getElementById(id), todayStr=()=>new Date().toISOString().slice(0,10);
+function save(){localStorage.setItem(KEY,JSON.stringify(db))}
+function show(id){document.querySelectorAll('.view').forEach(x=>x.classList.remove('active'));$(id).classList.add('active');document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('active',b.dataset.v===id));refresh()}
+document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>show(b.dataset.v));
+function fillSelects(){['v_vehicle','d_vehicle','t_vehicle','k_vehicle'].forEach(id=>{let s=$(id); if(!s)return; s.innerHTML=db.vehicles.map(v=>`<option>${v}</option>`).join(''); s.onchange=()=>driverAuto(id[0],s.value)});['v_date','d_date','t_date','k_date'].forEach(id=>{if($(id)&&!$(id).value)$(id).value=todayStr()}); driverAuto('d', $('d_vehicle').value);driverAuto('t',$('t_vehicle').value);driverAuto('k',$('k_vehicle').value)}
+function driverAuto(prefix,v){let el=$(prefix+'_driver');if(el)el.value=db.drivers[v]?.name||''}
+function calcDiesel(){let l=+$('d_liter').value||0,r=+$('d_rate').value||0;$('d_amount').value=(l*r).toFixed(2)}
+function calcKm(){let a=+$('k_open').value||0,b=+$('k_close').value||0;$('k_total').value=b>=a?b-a:0}
+function saveVehicle(){let v=$('v_vehicle').value,name=$('v_driver').value.trim();if(!name)return alert('Driver Name भरें');db.drivers[v]={name,mobile:$('v_mobile').value.trim(),date:$('v_date').value};save();alert('Driver entry save हो गई');refresh()}
+function saveDiesel(){let l=+$('d_liter').value||0,r=+$('d_rate').value||0;if(!l||!r)return alert('Liter और Rate भरें');db.diesel.push({id:Date.now(),vehicle:$('d_vehicle').value,driver:$('d_driver').value,date:$('d_date').value,liter:l,rate:r,amount:l*r,pump:$('d_pump').value});save();alert('Diesel entry save हो गई');['d_liter','d_rate','d_amount','d_pump'].forEach(x=>$(x).value='');refresh()}
+function saveTrip(){if(!$('t_from').value||!$('t_to').value)return alert('From और To भरें');db.trips.push({id:Date.now(),vehicle:$('t_vehicle').value,driver:$('t_driver').value,no:$('t_no').value,date:$('t_date').value,from:$('t_from').value,to:$('t_to').value,load:$('t_load').value,unload:$('t_unload').value,party:$('t_party').value});save();alert('Trip save हो गई');['t_no','t_from','t_to','t_load','t_unload','t_party'].forEach(x=>$(x).value='');refresh()}
+function saveKm(){let a=+$('k_open').value,b=+$('k_close').value;if(!Number.isFinite(a)||!Number.isFinite(b)||b<a)return alert('Opening/Closing KM सही भरें');db.km.push({id:Date.now(),vehicle:$('k_vehicle').value,driver:$('k_driver').value,date:$('k_date').value,open:a,close:b,total:b-a});save();alert('KM entry save हो गई');['k_open','k_close','k_total'].forEach(x=>$(x).value='');refresh()}
+function refresh(){fillSelects();let d=todayStr(),tr=db.trips.filter(x=>x.date===d),di=db.diesel.filter(x=>x.date===d),km=db.km.filter(x=>x.date===d);$('today').textContent=d;$('sTrips').textContent=tr.length;$('sDiesel').textContent=di.reduce((a,x)=>a+x.liter,0).toFixed(2)+' L';$('sAmount').textContent='₹'+di.reduce((a,x)=>a+x.amount,0).toFixed(2);$('sKm').textContent=km.reduce((a,x)=>a+x.total,0).toFixed(0);$('sEntries').textContent=db.diesel.length+db.trips.length+db.km.length;let ds=Object.entries(db.drivers);$('drivers').innerHTML=ds.length?ds.map(([v,x])=>`<div class="row" style="padding:8px 0;border-bottom:1px solid #eee"><span><b>${v}</b> — ${x.name}</span><span class="muted">${x.mobile||''}</span></div>`).join(''):'<span class="muted">अभी कोई driver save नहीं है</span>'}
+function renderReport(){let f=$('r_from').value||'0000-01-01',t=$('r_to').value||'9999-12-31';let di=db.diesel.filter(x=>x.date>=f&&x.date<=t),tr=db.trips.filter(x=>x.date>=f&&x.date<=t),km=db.km.filter(x=>x.date>=f&&x.date<=t);let rows=[...di.map(x=>`<tr><td>Diesel</td><td>${x.date}</td><td>${x.vehicle}</td><td>${x.driver}</td><td>${x.liter} L @ ₹${x.rate}</td><td>₹${x.amount.toFixed(2)}</td></tr>`),...tr.map(x=>`<tr><td>Trip</td><td>${x.date}</td><td>${x.vehicle}</td><td>${x.driver}</td><td>${x.from} → ${x.to}</td><td>${x.party||''}</td></tr>`),...km.map(x=>`<tr><td>KM</td><td>${x.date}</td><td>${x.vehicle}</td><td>${x.driver}</td><td>${x.open} → ${x.close}</td><td>${x.total} KM</td></tr>`)];$('reportOut').innerHTML=`<div class="row"><b>${f} से ${t}</b><span>Diesel ₹${di.reduce((a,x)=>a+x.amount,0).toFixed(2)} • ${di.reduce((a,x)=>a+x.liter,0).toFixed(2)} L • ${km.reduce((a,x)=>a+x.total,0)} KM • ${tr.length} Trips</span></div><div style="overflow:auto;margin-top:12px"><table><tr><th>Type</th><th>Date</th><th>Vehicle</th><th>Driver</th><th>Details</th><th>Amount/Result</th></tr>${rows.join('')}</table></div>`}
+function exportCSV(){let all=[['Type','Date','Vehicle','Driver','Details','Amount/Result']];db.diesel.forEach(x=>all.push(['Diesel',x.date,x.vehicle,x.driver,`${x.liter} L @ ${x.rate}`,x.amount]));db.trips.forEach(x=>all.push(['Trip',x.date,x.vehicle,x.driver,`${x.from} -> ${x.to}`,x.party]));db.km.forEach(x=>all.push(['KM',x.date,x.vehicle,x.driver,`${x.open} -> ${x.close}`,x.total]));let csv=all.map(r=>r.map(v=>`"${String(v??'').replaceAll('"','""')}"`).join(',')).join('\\n');let a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download='black-king-transport-report.csv';a.click()}
+function clearAll(){if(confirm('सारा saved data delete करना है?')){db={vehicles:db.vehicles,drivers:{},diesel:[],trips:[],km:[]};save();refresh()}}
+refresh();
+</script>
+</body></html>
